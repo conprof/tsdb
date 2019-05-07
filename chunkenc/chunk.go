@@ -37,6 +37,7 @@ func (e Encoding) String() string {
 const (
 	EncNone Encoding = iota
 	EncXOR
+	EncBytes
 )
 
 // Chunk holds a sequence of sample pairs that can be iterated over and appended to.
@@ -53,9 +54,21 @@ type Appender interface {
 	Append(int64, float64)
 }
 
+// AppenderBytes adds sample pairs enocded as bytes to a chunk.
+type AppenderBytes interface {
+	Append(int64, []byte)
+}
+
 // Iterator is a simple iterator that can only get the next value.
 type Iterator interface {
 	At() (int64, float64)
+	Err() error
+	Next() bool
+}
+
+// IteratorBytes is a simple bytes iterator that can only get the next value.
+type IteratorBytes interface {
+	At() (int64, []byte)
 	Err() error
 	Next() bool
 }
