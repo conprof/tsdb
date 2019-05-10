@@ -877,9 +877,9 @@ func TestDisableAutoCompactions(t *testing.T) {
 	db.DisableCompactions()
 	app := db.Appender()
 	for i := int64(0); i < 3; i++ {
-		_, err := app.Add(label, i*blockRange, 0)
+		_, err := app.Add(label, i*blockRange, []byte("0"))
 		testutil.Ok(t, err)
-		_, err = app.Add(label, i*blockRange+1000, 0)
+		_, err = app.Add(label, i*blockRange+1000, []byte("0"))
 		testutil.Ok(t, err)
 	}
 	testutil.Ok(t, app.Commit())
@@ -993,11 +993,11 @@ func TestDeleteCompactionBlockAfterFailedReload(t *testing.T) {
 
 			// Add some data to the head that is enough to trigger a compaction.
 			app := db.Appender()
-			_, err := app.Add(defaultLabel, 1, 0)
+			_, err := app.Add(defaultLabel, 1, []byte("0"))
 			testutil.Ok(t, err)
-			_, err = app.Add(defaultLabel, 2, 0)
+			_, err = app.Add(defaultLabel, 2, []byte("0"))
 			testutil.Ok(t, err)
-			_, err = app.Add(defaultLabel, 3+rangeToTriggerCompaction, 0)
+			_, err = app.Add(defaultLabel, 3+rangeToTriggerCompaction, []byte("0"))
 			testutil.Ok(t, err)
 			testutil.Ok(t, app.Commit())
 

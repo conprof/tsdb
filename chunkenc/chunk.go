@@ -29,6 +29,8 @@ func (e Encoding) String() string {
 		return "none"
 	case EncXOR:
 		return "XOR"
+	case EncBytes:
+		return "Bytes"
 	}
 	return "<unknown>"
 }
@@ -51,23 +53,11 @@ type Chunk interface {
 
 // Appender adds sample pairs to a chunk.
 type Appender interface {
-	Append(int64, float64)
-}
-
-// AppenderBytes adds sample pairs enocded as bytes to a chunk.
-type AppenderBytes interface {
 	Append(int64, []byte)
 }
 
 // Iterator is a simple iterator that can only get the next value.
 type Iterator interface {
-	At() (int64, float64)
-	Err() error
-	Next() bool
-}
-
-// IteratorBytes is a simple bytes iterator that can only get the next value.
-type IteratorBytes interface {
 	At() (int64, []byte)
 	Err() error
 	Next() bool
@@ -80,9 +70,9 @@ func NewNopIterator() Iterator {
 
 type nopIterator struct{}
 
-func (nopIterator) At() (int64, float64) { return 0, 0 }
-func (nopIterator) Next() bool           { return false }
-func (nopIterator) Err() error           { return nil }
+func (nopIterator) At() (int64, []byte) { return 0, []byte{0} }
+func (nopIterator) Next() bool          { return false }
+func (nopIterator) Err() error          { return nil }
 
 // Pool is used to create and reuse chunk references to avoid allocations.
 type Pool interface {
@@ -100,7 +90,7 @@ func NewPool() Pool {
 	return &pool{
 		xor: sync.Pool{
 			New: func() interface{} {
-				return &XORChunk{b: bstream{}}
+				return &BytesChunk{}
 			},
 		},
 	}
@@ -108,10 +98,14 @@ func NewPool() Pool {
 
 func (p *pool) Get(e Encoding, b []byte) (Chunk, error) {
 	switch e {
-	case EncXOR:
-		c := p.xor.Get().(*XORChunk)
-		c.b.stream = b
-		c.b.count = 0
+	// case EncXOR:
+	// 	c := p.xor.Get().(*XORChunk)
+	// 	c.b.stream = b
+	// 	c.b.count = 0
+	// 	return c, nil
+	case EncBytes:
+		c := p.xor.Get().(*BytesChunk)
+		c.b = b
 		return c, nil
 	}
 	return nil, errors.Errorf("invalid encoding %q", e)
@@ -119,16 +113,26 @@ func (p *pool) Get(e Encoding, b []byte) (Chunk, error) {
 
 func (p *pool) Put(c Chunk) error {
 	switch c.Encoding() {
-	case EncXOR:
-		xc, ok := c.(*XORChunk)
+	// case EncXOR:
+	// 	xc, ok := c.(*XORChunk)
+	// 	// This may happen often with wrapped chunks. Nothing we can really do about
+	// 	// it but returning an error would cause a lot of allocations again. Thus,
+	// 	// we just skip it.
+	// 	if !ok {
+	// 		return nil
+	// 	}
+	// 	xc.b.stream = nil
+	// 	xc.b.count = 0
+	// 	p.xor.Put(c)
+	case EncBytes:
+		xc, ok := c.(*BytesChunk)
 		// This may happen often with wrapped chunks. Nothing we can really do about
 		// it but returning an error would cause a lot of allocations again. Thus,
 		// we just skip it.
 		if !ok {
 			return nil
 		}
-		xc.b.stream = nil
-		xc.b.count = 0
+		xc.b = nil
 		p.xor.Put(c)
 	default:
 		return errors.Errorf("invalid encoding %q", c.Encoding())
@@ -142,7 +146,7 @@ func (p *pool) Put(c Chunk) error {
 func FromData(e Encoding, d []byte) (Chunk, error) {
 	switch e {
 	case EncXOR:
-		return &XORChunk{b: bstream{count: 0, stream: d}}, nil
+		return &BytesChunk{b: d}, nil
 	}
 	return nil, fmt.Errorf("unknown chunk encoding: %d", e)
 }

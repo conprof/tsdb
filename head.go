@@ -14,6 +14,7 @@
 package tsdb
 
 import (
+	"bytes"
 	"math"
 	"runtime"
 	"sort"
@@ -657,7 +658,7 @@ type initAppender struct {
 	head *Head
 }
 
-func (a *initAppender) Add(lset labels.Labels, t int64, v float64) (uint64, error) {
+func (a *initAppender) Add(lset labels.Labels, t int64, v []byte) (uint64, error) {
 	if a.app != nil {
 		return a.app.Add(lset, t, v)
 	}
@@ -667,7 +668,7 @@ func (a *initAppender) Add(lset labels.Labels, t int64, v float64) (uint64, erro
 	return a.app.Add(lset, t, v)
 }
 
-func (a *initAppender) AddFast(ref uint64, t int64, v float64) error {
+func (a *initAppender) AddFast(ref uint64, t int64, v []byte) error {
 	if a.app == nil {
 		return ErrNotFound
 	}
@@ -754,7 +755,7 @@ type headAppender struct {
 	samples []RefSample
 }
 
-func (a *headAppender) Add(lset labels.Labels, t int64, v float64) (uint64, error) {
+func (a *headAppender) Add(lset labels.Labels, t int64, v []byte) (uint64, error) {
 	if t < a.minValidTime {
 		return 0, ErrOutOfBounds
 	}
@@ -772,7 +773,7 @@ func (a *headAppender) Add(lset labels.Labels, t int64, v float64) (uint64, erro
 	return s.ref, a.AddFast(s.ref, t, v)
 }
 
-func (a *headAppender) AddFast(ref uint64, t int64, v float64) error {
+func (a *headAppender) AddFast(ref uint64, t int64, v []byte) error {
 	if t < a.minValidTime {
 		return ErrOutOfBounds
 	}
@@ -1483,14 +1484,14 @@ func (s *stripeSeries) getOrSet(hash uint64, series *memSeries) (*memSeries, boo
 
 type sample struct {
 	t int64
-	v float64
+	v []byte
 }
 
 func (s sample) T() int64 {
 	return s.t
 }
 
-func (s sample) V() float64 {
+func (s sample) V() []byte {
 	return s.v
 }
 
@@ -1540,7 +1541,7 @@ func (s *memSeries) maxTime() int64 {
 
 func (s *memSeries) cut(mint int64) *memChunk {
 	c := &memChunk{
-		chunk:   chunkenc.NewXORChunk(),
+		chunk:   chunkenc.NewBytesChunk(),
 		minTime: mint,
 		maxTime: math.MinInt64,
 	}
@@ -1580,7 +1581,7 @@ func (s *memSeries) reset() {
 }
 
 // appendable checks whether the given sample is valid for appending to the series.
-func (s *memSeries) appendable(t int64, v float64) error {
+func (s *memSeries) appendable(t int64, v []byte) error {
 	c := s.head()
 	if c == nil {
 		return nil
@@ -1594,7 +1595,7 @@ func (s *memSeries) appendable(t int64, v float64) error {
 	}
 	// We are allowing exact duplicates as we can encounter them in valid cases
 	// like federation and erroring out at that time would be extremely noisy.
-	if math.Float64bits(s.sampleBuf[3].v) != math.Float64bits(v) {
+	if !bytes.Equal(s.sampleBuf[3].v, v) {
 		return ErrAmendSample
 	}
 	return nil
@@ -1634,7 +1635,7 @@ func (s *memSeries) truncateChunksBefore(mint int64) (removed int) {
 }
 
 // append adds the sample (t, v) to the series.
-func (s *memSeries) append(t int64, v float64) (success, chunkCreated bool) {
+func (s *memSeries) append(t int64, v []byte) (success, chunkCreated bool) {
 	// Based on Gorilla white papers this offers near-optimal compression ratio
 	// so anything bigger that this has diminishing returns and increases
 	// the time range within which we have to decompress all samples.
@@ -1741,7 +1742,7 @@ func (it *memSafeIterator) Next() bool {
 	return true
 }
 
-func (it *memSafeIterator) At() (int64, float64) {
+func (it *memSafeIterator) At() (int64, []byte) {
 	if it.total-it.i > 4 {
 		return it.Iterator.At()
 	}

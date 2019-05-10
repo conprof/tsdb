@@ -114,7 +114,7 @@ type RefSeries struct {
 type RefSample struct {
 	Ref uint64
 	T   int64
-	V   float64
+	V   []byte
 
 	series *memSeries
 }
@@ -819,7 +819,7 @@ func (w *SegmentWAL) encodeSamples(buf *encoding.Encbuf, samples []RefSample) ui
 	for _, s := range samples {
 		buf.PutVarint64(int64(s.Ref) - int64(first.Ref))
 		buf.PutVarint64(s.T - first.T)
-		buf.PutBE64(math.Float64bits(s.V))
+		buf.PutUvarintBytes(s.V)
 	}
 	return walSamplesSimple
 }
@@ -1163,12 +1163,12 @@ func (r *walReader) decodeSamples(flag byte, b []byte, res *[]RefSample) error {
 	for len(dec.B) > 0 && dec.Err() == nil {
 		dref := dec.Varint64()
 		dtime := dec.Varint64()
-		val := dec.Be64()
+		val := dec.UvarintBytes()
 
 		*res = append(*res, RefSample{
 			Ref: uint64(int64(baseRef) + dref),
 			T:   baseTime + dtime,
-			V:   math.Float64frombits(val),
+			V:   val,
 		})
 	}
 

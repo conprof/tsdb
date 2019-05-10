@@ -237,8 +237,8 @@ func MergeOverlappingChunks(chks []Meta) ([]Meta, error) {
 
 // MergeChunks vertically merges a and b, i.e., if there is any sample
 // with same timestamp in both a and b, the sample in a is discarded.
-func MergeChunks(a, b chunkenc.Chunk) (*chunkenc.XORChunk, error) {
-	newChunk := chunkenc.NewXORChunk()
+func MergeChunks(a, b chunkenc.Chunk) (*chunkenc.BytesChunk, error) {
+	newChunk := chunkenc.NewBytesChunk()
 	app, err := newChunk.Appender()
 	if err != nil {
 		return nil, err

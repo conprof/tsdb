@@ -39,6 +39,7 @@ func (e *Encbuf) Len() int    { return len(e.B) }
 
 func (e *Encbuf) PutString(s string) { e.B = append(e.B, s...) }
 func (e *Encbuf) PutByte(c byte)     { e.B = append(e.B, c) }
+func (e *Encbuf) PutBytes(b []byte)  { e.B = append(e.B, b...) }
 
 func (e *Encbuf) PutBE32int(x int)      { e.PutBE32(uint32(x)) }
 func (e *Encbuf) PutUvarint32(x uint32) { e.PutUvarint64(uint64(x)) }
@@ -80,6 +81,12 @@ func (e *Encbuf) PutHash(h hash.Hash) {
 		panic(err) // The CRC32 implementation does not error
 	}
 	e.B = h.Sum(e.B)
+}
+
+// PutUvarintBytes writes a byte slice to the buffer prefixed by its varint length.
+func (e *Encbuf) PutUvarintBytes(b []byte) {
+	e.PutUvarint(len(b))
+	e.PutBytes(b)
 }
 
 // Decbuf provides safe methods to extract data from a byte slice. It does all
@@ -231,6 +238,20 @@ func (d *Decbuf) Byte() byte {
 	x := d.B[0]
 	d.B = d.B[1:]
 	return x
+}
+
+func (d *Decbuf) UvarintBytes() []byte {
+	l := d.Uvarint64()
+	if d.E != nil {
+		return nil
+	}
+	if len(d.B) < int(l) {
+		d.E = ErrInvalidSize
+		return nil
+	}
+	b := d.B[:l]
+	d.B = d.B[l:]
+	return b
 }
 
 func (d *Decbuf) Err() error  { return d.E }

@@ -15,7 +15,6 @@
 package tsdb
 
 import (
-	"math"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -104,12 +103,12 @@ func (d *RecordDecoder) Samples(rec []byte, samples []RefSample) ([]RefSample, e
 	for len(dec.B) > 0 && dec.Err() == nil {
 		dref := dec.Varint64()
 		dtime := dec.Varint64()
-		val := dec.Be64()
+		val := dec.UvarintBytes()
 
 		samples = append(samples, RefSample{
 			Ref: uint64(int64(baseRef) + dref),
 			T:   baseTime + dtime,
-			V:   math.Float64frombits(val),
+			V:   val,
 		})
 	}
 
@@ -187,7 +186,7 @@ func (e *RecordEncoder) Samples(samples []RefSample, b []byte) []byte {
 	for _, s := range samples {
 		buf.PutVarint64(int64(s.Ref) - int64(first.Ref))
 		buf.PutVarint64(s.T - first.T)
-		buf.PutBE64(math.Float64bits(s.V))
+		buf.PutUvarintBytes(s.V)
 	}
 	return buf.Get()
 }

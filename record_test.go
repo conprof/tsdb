@@ -44,9 +44,9 @@ func TestRecord_EncodeDecode(t *testing.T) {
 	testutil.Equals(t, series, decSeries)
 
 	samples := []RefSample{
-		{Ref: 0, T: 12423423, V: 1.2345},
-		{Ref: 123, T: -1231, V: -123},
-		{Ref: 2, T: 0, V: 99999},
+		{Ref: 0, T: 12423423, V: []byte("1.2345")},
+		{Ref: 123, T: -1231, V: []byte("-123")},
+		{Ref: 2, T: 0, V: []byte("99999")},
 	}
 	decSamples, err := dec.Samples(enc.Samples(samples, nil), nil)
 	testutil.Ok(t, err)
@@ -95,7 +95,7 @@ func TestRecord_Corruputed(t *testing.T) {
 
 	t.Run("Test corrupted sample record", func(t *testing.T) {
 		samples := []RefSample{
-			{Ref: 0, T: 12423423, V: 1.2345},
+			{Ref: 0, T: 12423423, V: []byte("1.2345")},
 		}
 
 		corrupted := enc.Samples(samples, nil)[:8]

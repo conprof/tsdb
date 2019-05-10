@@ -236,7 +236,7 @@ func (b *writeBenchmark) ingestScrapesShard(lbls []labels.Labels, scrapeCount in
 
 	type sample struct {
 		labels labels.Labels
-		value  int64
+		value  []byte
 		ref    *uint64
 	}
 
@@ -245,7 +245,7 @@ func (b *writeBenchmark) ingestScrapesShard(lbls []labels.Labels, scrapeCount in
 	for _, m := range lbls {
 		scrape = append(scrape, &sample{
 			labels: m,
-			value:  123456789,
+			value:  []byte("123456789"),
 		})
 	}
 	total := uint64(0)
@@ -255,21 +255,21 @@ func (b *writeBenchmark) ingestScrapesShard(lbls []labels.Labels, scrapeCount in
 		ts += timeDelta
 
 		for _, s := range scrape {
-			s.value += 1000
+			s.value = append(s.value, []byte("1000")...)
 
 			if s.ref == nil {
-				ref, err := app.Add(s.labels, ts, float64(s.value))
+				ref, err := app.Add(s.labels, ts, s.value)
 				if err != nil {
 					panic(err)
 				}
 				s.ref = &ref
-			} else if err := app.AddFast(*s.ref, ts, float64(s.value)); err != nil {
+			} else if err := app.AddFast(*s.ref, ts, s.value); err != nil {
 
 				if errors.Cause(err) != tsdb.ErrNotFound {
 					panic(err)
 				}
 
-				ref, err := app.Add(s.labels, ts, float64(s.value))
+				ref, err := app.Add(s.labels, ts, s.value)
 				if err != nil {
 					panic(err)
 				}
@@ -567,7 +567,7 @@ func dumpSamples(db *tsdb.DB, mint, maxt int64) {
 		it := series.Iterator()
 		for it.Next() {
 			ts, val := it.At()
-			fmt.Printf("%s %g %d\n", labels, val, ts)
+			fmt.Printf("%s %b %d\n", labels, val, ts)
 		}
 		if it.Err() != nil {
 			exitWithError(ss.Err())

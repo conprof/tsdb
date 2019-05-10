@@ -20,7 +20,7 @@ import (
 
 type Sample interface {
 	T() int64
-	V() float64
+	V() []byte
 }
 
 func ChunkFromSamples(s []Sample) chunks.Meta {
@@ -30,7 +30,7 @@ func ChunkFromSamples(s []Sample) chunks.Meta {
 		mint, maxt = s[0].T(), s[len(s)-1].T()
 	}
 
-	c := chunkenc.NewXORChunk()
+	c := chunkenc.NewBytesChunk()
 	ca, _ := c.Appender()
 
 	for _, s := range s {
@@ -47,7 +47,7 @@ func ChunkFromSamples(s []Sample) chunks.Meta {
 func PopulatedChunk(numSamples int, minTime int64) chunks.Meta {
 	samples := make([]Sample, numSamples)
 	for i := 0; i < numSamples; i++ {
-		samples[i] = sample{minTime + int64(i*1000), 1.0}
+		samples[i] = sample{minTime + int64(i*1000), []byte("1")}
 	}
 	return ChunkFromSamples(samples)
 }

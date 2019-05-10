@@ -806,7 +806,7 @@ type SeriesIterator interface {
 	// after t.
 	Seek(t int64) bool
 	// At returns the current timestamp/value pair.
-	At() (t int64, v float64)
+	At() (t int64, v []byte)
 	// Next advances the iterator by one.
 	Next() bool
 	// Err returns the current error.
@@ -876,7 +876,7 @@ func (it *chainedSeriesIterator) Next() bool {
 	return it.Next()
 }
 
-func (it *chainedSeriesIterator) At() (t int64, v float64) {
+func (it *chainedSeriesIterator) At() (t int64, v []byte) {
 	return it.cur.At()
 }
 
@@ -905,7 +905,7 @@ type verticalMergeSeriesIterator struct {
 	aok, bok, initialized bool
 
 	curT int64
-	curV float64
+	curV []byte
 }
 
 func newVerticalMergeSeriesIterator(s ...Series) SeriesIterator {
@@ -967,7 +967,7 @@ func (it *verticalMergeSeriesIterator) Next() bool {
 	return true
 }
 
-func (it *verticalMergeSeriesIterator) At() (t int64, v float64) {
+func (it *verticalMergeSeriesIterator) At() (t int64, v []byte) {
 	return it.curT, it.curV
 }
 
@@ -1039,7 +1039,7 @@ func (it *chunkSeriesIterator) Seek(t int64) (ok bool) {
 	return false
 }
 
-func (it *chunkSeriesIterator) At() (t int64, v float64) {
+func (it *chunkSeriesIterator) At() (t int64, v []byte) {
 	return it.cur.At()
 }
 
@@ -1088,7 +1088,7 @@ type deletedIterator struct {
 	intervals Intervals
 }
 
-func (it *deletedIterator) At() (int64, float64) {
+func (it *deletedIterator) At() (int64, []byte) {
 	return it.it.At()
 }
 

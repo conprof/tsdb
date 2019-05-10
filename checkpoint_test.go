@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -135,10 +136,10 @@ func TestCheckpoint(t *testing.T) {
 		// Make them have drifting timestamps within a record to see that they
 		// get filtered properly.
 		b := enc.Samples([]RefSample{
-			{Ref: 0, T: last, V: float64(i)},
-			{Ref: 1, T: last + 10000, V: float64(i)},
-			{Ref: 2, T: last + 20000, V: float64(i)},
-			{Ref: 3, T: last + 30000, V: float64(i)},
+			{Ref: 0, T: last, V: []byte(strconv.Itoa(i))},
+			{Ref: 1, T: last + 10000, V: []byte(strconv.Itoa(i))},
+			{Ref: 2, T: last + 20000, V: []byte(strconv.Itoa(i))},
+			{Ref: 3, T: last + 30000, V: []byte(strconv.Itoa(i))},
 		}, nil)
 		testutil.Ok(t, w.Log(b))
 

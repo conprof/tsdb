@@ -55,7 +55,12 @@ type BytesChunk struct {
 
 // NewBytesChunk returns a new chunk with Bytes encoding of the given size.
 func NewBytesChunk() *BytesChunk {
-	b := make([]byte, 2, 128)
+	// Each chunk holds arround 120 samples.
+	// 2 bytes are used for the Sumples count.
+	// All timestamps occupy arround 130-150 bytes leaving 4850bytes for the samples.
+	// This is arround 40bytes per sample.
+	// If the appended samples require more space can increase this array size.
+	b := make([]byte, 2, 5000)
 	return &BytesChunk{b: b}
 }
 
@@ -75,7 +80,7 @@ func (c *BytesChunk) NumSamples() int {
 }
 
 // Appender implements the Chunk interface.
-func (c *BytesChunk) Appender() (AppenderBytes, error) {
+func (c *BytesChunk) Appender() (Appender, error) {
 	// it := c.iterator()
 
 	// // To get an appender we must know the state it would have if we had
@@ -88,7 +93,7 @@ func (c *BytesChunk) Appender() (AppenderBytes, error) {
 	// }
 
 	a := &bytesAppender{
-		b: c.b,
+		b: c,
 	}
 	return a, nil
 }
@@ -104,7 +109,7 @@ func (c *BytesChunk) Appender() (AppenderBytes, error) {
 // }
 
 // Iterator implements the Chunk interface.
-func (c *BytesChunk) Iterator() IteratorBytes {
+func (c *BytesChunk) Iterator() Iterator {
 	// Should iterators guarantee to act on a copy of the data so it doesn't lock append?
 	// When using striped locks to guard access to chunks, probably yes.
 	// Could only copy data if the chunk is not completed yet.
@@ -115,7 +120,7 @@ func (c *BytesChunk) Iterator() IteratorBytes {
 }
 
 type bytesAppender struct {
-	b []byte
+	b *BytesChunk
 
 	t      int64
 	tDelta uint64
@@ -124,7 +129,7 @@ type bytesAppender struct {
 func (a *bytesAppender) Append(t int64, v []byte) {
 	var tDelta uint64
 	var tt uint64
-	num := binary.BigEndian.Uint16(a.b)
+	num := binary.BigEndian.Uint16(a.b.b)
 
 	if num == 0 {
 		tt = uint64(t)
@@ -140,17 +145,25 @@ func (a *bytesAppender) Append(t int64, v []byte) {
 
 	// Append the time.
 	buf := make([]byte, binary.MaxVarintLen64)
-	a.b = append(a.b, buf[:binary.PutUvarint(buf, tt)]...)
+	time := buf[:binary.PutUvarint(buf, tt)]
+	a.b.b = append(a.b.b, time...)
 
+	// When adding empty samples we still need to create a non nil byte array to avoid EOF errors.
+	if len(v) == 0 {
+		v = []byte(" ")
+	}
 	// Append size of the sample's byte slice.
-	a.b = append(a.b, buf[:binary.PutVarint(buf, int64(len(v)))]...)
+	size := buf[:binary.PutUvarint(buf, uint64(len(v)))]
+	a.b.b = append(a.b.b, size...)
 
 	// Append the sample's bytes.
-	a.b = append(a.b, v...)
+	a.b.b = append(a.b.b, v...)
 
 	a.t = t
-	binary.BigEndian.PutUint16(a.b, num+1)
+	binary.BigEndian.PutUint16(a.b.b, num+1)
+
 	a.tDelta = tDelta
+
 }
 
 type bytesIterator struct {
@@ -177,24 +190,23 @@ func (it *bytesIterator) Next() bool {
 	if it.err != nil || it.numRead == it.numTotal {
 		return false
 	}
-
-	t, err := binary.ReadVarint(it.br)
+	t, err := binary.ReadUvarint(it.br)
 	if err != nil {
 		it.err = err
 		return false
 	}
 
 	if it.numRead == 0 {
-		it.t = t
+		it.t = int64(t)
 	} else if it.numRead == 1 {
-		it.tDelta = uint64(t)
+		it.tDelta = t
 		it.t = it.t + int64(it.tDelta)
 	} else {
-		it.tDelta = uint64(int64(it.tDelta) + t)
+		it.tDelta = uint64(int64(it.tDelta) + int64(t))
 		it.t = it.t + int64(it.tDelta)
 	}
 
-	sampleLen, err := binary.ReadVarint(it.br)
+	sampleLen, err := binary.ReadUvarint(it.br)
 	if err != nil {
 		it.err = err
 		return false
@@ -205,6 +217,11 @@ func (it *bytesIterator) Next() bool {
 	if err != nil {
 		it.err = err
 		return false
+	}
+
+	// Convert an empty sample value to a nil array as this is what the reader will expect.
+	if bytes.Equal(it.val, []byte(" ")) {
+		it.val = nil
 	}
 
 	it.numRead++

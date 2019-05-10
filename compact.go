@@ -774,7 +774,7 @@ func (c *LeveledCompactor) populateBlock(blocks []BlockReader, meta *BlockMeta, 
 				if !chk.OverlapsClosedInterval(dranges[0].Mint, dranges[len(dranges)-1].Maxt) {
 					continue
 				}
-				newChunk := chunkenc.NewXORChunk()
+				newChunk := chunkenc.NewBytesChunk()
 				app, err := newChunk.Appender()
 				if err != nil {
 					return err
