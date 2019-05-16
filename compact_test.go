@@ -1055,3 +1055,40 @@ func TestDeleteCompactionBlockAfterFailedReload(t *testing.T) {
 		})
 	}
 }
+
+// TestHeadToBlock ensures that at compaction when
+// the head has enough data it results in creating a new block.
+func TestHeadToBlock(t *testing.T) {
+	db, delete := openTestDB(t, nil)
+	defer func() {
+		testutil.Ok(t, db.Close())
+		delete()
+	}()
+
+	blockRange := DefaultOptions.BlockRanges[0]
+	label := labels.FromStrings("foo", "bar")
+
+	// Add enough data to trigger compaction and a new block.
+	app := db.Appender()
+	for i := int64(0); i < 3; i++ {
+		_, err := app.Add(label, i*blockRange, []byte("0"))
+		testutil.Ok(t, err)
+		_, err = app.Add(label, i*blockRange+1000, []byte("0"))
+		testutil.Ok(t, err)
+	}
+	testutil.Ok(t, app.Commit())
+
+	select {
+	case db.compactc <- struct{}{}:
+	default:
+	}
+
+	for x := 0; x < 100; x++ {
+		if len(db.Blocks()) > 0 {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	testutil.Assert(t, len(db.Blocks()) == 1, "No block was persisted after the set timeout.")
+}
