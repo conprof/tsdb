@@ -34,12 +34,12 @@ import (
 	"github.com/oklog/ulid"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/tsdb/chunkenc"
-	tsdb_errors "github.com/prometheus/tsdb/errors"
-	"github.com/prometheus/tsdb/fileutil"
-	_ "github.com/prometheus/tsdb/goversion"
-	"github.com/prometheus/tsdb/labels"
-	"github.com/prometheus/tsdb/wal"
+	"github.com/conprof/tsdb/chunkenc"
+	tsdb_errors "github.com/conprof/tsdb/errors"
+	"github.com/conprof/tsdb/fileutil"
+	_ "github.com/conprof/tsdb/goversion"
+	"github.com/conprof/tsdb/labels"
+	"github.com/conprof/tsdb/wal"
 	"golang.org/x/sync/errgroup"
 )
 

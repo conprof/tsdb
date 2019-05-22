@@ -29,12 +29,12 @@ import (
 	"github.com/oklog/ulid"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/tsdb/chunkenc"
-	"github.com/prometheus/tsdb/chunks"
-	tsdb_errors "github.com/prometheus/tsdb/errors"
-	"github.com/prometheus/tsdb/fileutil"
-	"github.com/prometheus/tsdb/index"
-	"github.com/prometheus/tsdb/labels"
+	"github.com/conprof/tsdb/chunkenc"
+	"github.com/conprof/tsdb/chunks"
+	tsdb_errors "github.com/conprof/tsdb/errors"
+	"github.com/conprof/tsdb/fileutil"
+	"github.com/conprof/tsdb/index"
+	"github.com/conprof/tsdb/labels"
 )
 
 // ExponentialBlockRanges returns the time ranges based on the stepSize.

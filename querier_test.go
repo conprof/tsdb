@@ -23,12 +23,12 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"github.com/prometheus/tsdb/chunkenc"
-	"github.com/prometheus/tsdb/chunks"
-	"github.com/prometheus/tsdb/index"
-	"github.com/prometheus/tsdb/labels"
-	"github.com/prometheus/tsdb/testutil"
-	"github.com/prometheus/tsdb/tsdbutil"
+	"github.com/conprof/tsdb/chunkenc"
+	"github.com/conprof/tsdb/chunks"
+	"github.com/conprof/tsdb/index"
+	"github.com/conprof/tsdb/labels"
+	"github.com/conprof/tsdb/testutil"
+	"github.com/conprof/tsdb/tsdbutil"
 )
 
 type mockSeriesSet struct {
@@ -1042,7 +1042,7 @@ func TestSeriesIterator(t *testing.T) {
 	})
 }
 
-// Regression for: https://github.com/prometheus/tsdb/pull/97
+// Regression for: https://github.com/conprof/tsdb/pull/97
 func TestChunkSeriesIterator_DoubleSeek(t *testing.T) {
 	chkMetas := []chunks.Meta{
 		tsdbutil.ChunkFromSamples([]tsdbutil.Sample{}),

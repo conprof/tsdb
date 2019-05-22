@@ -23,16 +23,16 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/conprof/tsdb/chunkenc"
+	"github.com/conprof/tsdb/chunks"
+	"github.com/conprof/tsdb/encoding"
+	"github.com/conprof/tsdb/index"
+	"github.com/conprof/tsdb/labels"
+	"github.com/conprof/tsdb/wal"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/tsdb/chunkenc"
-	"github.com/prometheus/tsdb/chunks"
-	"github.com/prometheus/tsdb/encoding"
-	"github.com/prometheus/tsdb/index"
-	"github.com/prometheus/tsdb/labels"
-	"github.com/prometheus/tsdb/wal"
 )
 
 var (

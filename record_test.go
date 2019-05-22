@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"github.com/prometheus/tsdb/encoding"
-	"github.com/prometheus/tsdb/labels"
-	"github.com/prometheus/tsdb/testutil"
+	"github.com/conprof/tsdb/encoding"
+	"github.com/conprof/tsdb/labels"
+	"github.com/conprof/tsdb/testutil"
 )
 
 func TestRecord_EncodeDecode(t *testing.T) {

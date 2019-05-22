@@ -24,10 +24,10 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"github.com/prometheus/tsdb/fileutil"
-	"github.com/prometheus/tsdb/labels"
-	"github.com/prometheus/tsdb/testutil"
-	"github.com/prometheus/tsdb/wal"
+	"github.com/conprof/tsdb/fileutil"
+	"github.com/conprof/tsdb/labels"
+	"github.com/conprof/tsdb/testutil"
+	"github.com/conprof/tsdb/wal"
 )
 
 func TestLastCheckpoint(t *testing.T) {

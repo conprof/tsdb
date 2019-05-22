@@ -14,9 +14,9 @@
 package tsdb
 
 import (
-	"github.com/prometheus/tsdb/chunks"
-	"github.com/prometheus/tsdb/index"
-	"github.com/prometheus/tsdb/labels"
+	"github.com/conprof/tsdb/chunks"
+	"github.com/conprof/tsdb/index"
+	"github.com/conprof/tsdb/labels"
 )
 
 type mockIndexWriter struct {

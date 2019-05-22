@@ -19,7 +19,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/prometheus/tsdb/testutil"
+	"github.com/conprof/tsdb/testutil"
 )
 
 func TestSampleRing(t *testing.T) {

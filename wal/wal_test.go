@@ -23,8 +23,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/conprof/tsdb/testutil"
 	client_testutil "github.com/prometheus/client_golang/prometheus/testutil"
-	"github.com/prometheus/tsdb/testutil"
 )
 
 func TestWAL_Repair(t *testing.T) {
@@ -45,7 +45,7 @@ func TestWAL_Repair(t *testing.T) {
 		},
 		// Ensures that the page buffer is big enough to fit
 		// an entire page size without panicing.
-		// https://github.com/prometheus/tsdb/pull/414
+		// https://github.com/conprof/tsdb/pull/414
 		"bad_header": {
 			1,
 			func(f *os.File) {

@@ -21,7 +21,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/prometheus/tsdb/labels"
+	"github.com/conprof/tsdb/labels"
 )
 
 var allPostingsKey = labels.Label{}

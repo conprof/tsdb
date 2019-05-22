@@ -33,9 +33,9 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
-	"github.com/prometheus/tsdb"
-	"github.com/prometheus/tsdb/chunks"
-	"github.com/prometheus/tsdb/labels"
+	"github.com/conprof/tsdb"
+	"github.com/conprof/tsdb/chunks"
+	"github.com/conprof/tsdb/labels"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

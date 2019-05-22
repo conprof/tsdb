@@ -25,9 +25,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	tsdb_errors "github.com/prometheus/tsdb/errors"
-	"github.com/prometheus/tsdb/fileutil"
-	"github.com/prometheus/tsdb/wal"
+	tsdb_errors "github.com/conprof/tsdb/errors"
+	"github.com/conprof/tsdb/fileutil"
+	"github.com/conprof/tsdb/wal"
 )
 
 // CheckpointStats returns stats about a created checkpoint.
