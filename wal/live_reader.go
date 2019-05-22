@@ -29,7 +29,7 @@ import (
 
 var (
 	readerCorruptionErrors = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "prometheus_tsdb_wal_reader_corruption_errors",
+		Name: "conprof_tsdb_wal_reader_corruption_errors",
 		Help: "Errors encountered when reading the WAL.",
 	}, []string{"error"})
 )
